@@ -66,6 +66,10 @@ class GitHttp
         command = git_command("#{@rpc} --stateless-rpc #{@dir}")
         IO.popen(command, File::RDWR) do |pipe|
           pipe.write(input)
+          # The following line is a hack to allow shallow clone operations to
+          # avoid hangs.
+          # See https://github.com/schacon/grack/pull/7 for more details.
+          pipe.close_write
           while !pipe.eof?
             block = pipe.read(8192) # 8M at a time
             @res.write block        # steam it to the client
